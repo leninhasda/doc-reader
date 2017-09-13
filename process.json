@@ -1,0 +1,13 @@
+{
+  "apps": [
+    {
+      "name": "doc-reader",
+      "script": "run.sh",
+      "interpreter": "bash",
+      "watch": true,
+      "ignore_watch": [
+        "storage", ".git"
+      ]
+    }
+  ]
+}

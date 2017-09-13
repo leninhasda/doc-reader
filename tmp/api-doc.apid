@@ -1,0 +1,386 @@
+FORMAT: 1A
+
+HOST: http://128.199.68.165:9090/api/v1
+
+# Test / Wallet API
+Pathaocash / wallet service.
+
+
+# Group System
+Grouping all the other services that are not wallet or transaction
+
+
+## System Status - D [GET /systemcheck]
+probable response can be like
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "status": "active",
+                "force_update": true
+            }
+        }
+
+
+## Get user info - P [GET /userinfo]
+returns a user information
+parameters and response formats need to be decided
+
++ Response 200 (application/json)
+
+
+## User login - d [POST /login]
+please check the auth login document
+
++ Request (application/json)
+
++ Response 200 (application/json)
+
+
+
+# Group Wallet
+Grouping all the wallet related endpoints.
+
+## Get wallet info - D [GET /wallets/info]
+
++ Request
+    + Headers
+
+            Wallet-ID: "100AA00" (string) - wallet ID
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "100AA00",
+                "amount": 100,
+                "created_at": "2017-08-21T06:40:48.925354Z",
+                "enabled_at": "2017-08-21T06:40:48.925354Z",
+                "is_enabled": true,
+                "is_locked": false,
+                "locked_at": null,
+                "type": "personal",
+                "updated_at": "2017-08-21T06:40:48.925354Z",
+                "user_id": "123"
+            }
+        }
+
+## List Wallets - D [GET /wallets{?phone}]
+
++ Parameters
+    + phone: "01XXXXXXXXX" (string, optional) - user phone number
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id": "100AA00",
+                    "amount": 100,
+                    "created_at": "2017-08-21T06:40:48.925354Z",
+                    "enabled_at": "2017-08-21T06:40:48.925354Z",
+                    "is_enabled": true,
+                    "is_locked": false,
+                    "locked_at": null,
+                    "type": "personal",
+                    "updated_at": "2017-08-21T06:40:48.925354Z",
+                    "user_id": "123",
+                    "user": {
+                        "id": 123,
+                        "name": "John Doe",
+                        "email": "john@doe.com",
+                        "number": "01234567899",
+                        "profile_pic": "",
+                        "type": "admin"
+                    }
+                }
+            ]
+        }
+
+## Create a wallet - D [POST /wallets]
+create a wallet
+
++ Request 200 (application/json)
+
+        {
+            "type": "admin",
+            "pin": "1234",
+            "user_id": "12"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "wallet_id": "3819084c-0e0f-4d9c-813b-5344e8829e9f"
+            }
+        }
+
+
+## Change wallet PIN - D [POST /wallets/change-pin]
+change a wallet pin
+
++ Request (application/json)
+    + Headers
+
+            Wallet-ID: "100AA00" (string) - wallet ID
+
+    + Body
+
+            {
+                "current_pin": "1234",
+                "new_pin": "4321"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "3819084c-0e0f-4d9c-813b-5344e8829e9f",
+                "amount": 0,
+                "created_at": "2017-08-21T07:10:48.308988Z",
+                "enabled_at": "2017-08-21T07:10:48.308988Z",
+                "is_enabled": true,
+                "is_locked": false,
+                "locked_at": null,
+                "type": "admin",
+                "updated_at": "2017-08-21T07:10:48.308988Z",
+                "user_id": "12"
+            }
+        }
+
+## Lock Wallet - D [POST /wallets/lock]
+lock wallet
+
++ Request (application/json)
+    + Headers
+
+            Wallet-ID: "100AA00" (string) - wallet ID
+
+    + Body
+
+            {
+                "is_locked": true
+            }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "3819084c-0e0f-4d9c-813b-5344e8829e9f",
+                "amount": 0,
+                "created_at": "2017-08-21T07:10:48.308988Z",
+                "enabled_at": "2017-08-21T07:10:48.308988Z",
+                "is_enabled": true,
+                "is_locked": true,
+                "locked_at": "2017-08-21T13:33:54.678389752+06:00",
+                "type": "admin",
+                "updated_at": "2017-08-21T07:10:48.308988Z",
+                "user_id": "12"
+            }
+        }
+
+
+
+# Group Transaction
+Grouping of all the transaction related API
+
+## Transactions [/transactions]
+Retrieves all the transactions
+
+### Get all - D [GET /transactions{?page,per_page,from_date,to_date}]
+Get all transaction within date range
+
++ Parameters
+    + per_page: 10 (number, optional) - per page limit
+    + page: 1 (number, optional) - current page number
+    + from_date: `2017-06-31` (string) - from date in YYYY-MM-DD format
+    + to_date: `2017-07-31` (string) - to date in YYYY-MM-DD format
+
++ Request
+    + Headers
+
+            Authorization: Bearer {{access_token}}
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id": "ASDFG12345",
+                    "sender": {
+                        "username": "John Doe",
+                        "avatar": "/profile/image/101.jpg",
+                        "phone": "+880ZZZZZZZZZZ"
+                    },
+                    "receiver": {
+                        "username": "John Doe 2",
+                        "avatar": "/profile/image/102.jpg",
+                        "phone": "+880ZZZZZZZZZY"
+                    },
+                    "type": "some type",
+                    "datetime": "timestamp",
+                    "amount": 100,
+                    "after_transaction_amount": 200
+                }
+            ]
+        }
+
+### Create Transaction - D [POST]
+create or make a transaction
+
++ Request 200 (application/json)
+    + Headers
+
+            Authorization: Bearer {{access_token}}
+
+    + Body
+
+            {
+                "source": "c01bb72c-94e3-3245-835d-6e2339b35a9b",
+                "destination": "963fc38e-7bf3-3c03-a33c-d64ce9fa125c",
+                "amount": 4000,
+                "note": "urgent money transfer",
+                "pin": "1234"
+            }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "message": "Transaction successful",
+                "transaction_id": "5a9b5cBF80UxzQ5c"
+            }
+        }
+
+
+
+# Group Dashboard API
+
+## PA List - P [GET /admins{?per_page,page}]
+
++ Parameters
+
+    + per_page: 10 (number, optional) - per page limit
+    + page: 1 (number, optional) - current page number
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "name": "john doe",
+                    "email": "john.doe@gmail.com",
+                    "is_active": true,
+                    "type": "pa",
+                    "avatar": "profile/pic/image"
+                }
+            ]
+        }
+
+## Create PA - P [POST /admins]
+create a pathao admin user
+
++ Request 200 (application/json)
+
+        {
+            "name": "john doe",
+            "email": "john.doe@gmail.com",
+            "password": "secret",
+            "confirm_password": "secret",
+            "is_active": true,
+            "type": "pa",
+            "avatar": "profile/pic/image"
+        }
+
++ Response 200 (application/json)
+
+
+## Update PA - P [PATCH /admins/{ID}]
+
++ Request 200 (application/json)
+
+        {
+            "name": "john doe",
+            "email": "john.doe@gmail.com",
+            "password": "secret",
+            "confirm_password": "secret",
+            "is_active": true,
+            "type": "pa",
+            "avatar": "profile/pic/image"
+        }
+
++ Response 200 (application/json)
+
+
+## E-cash Allocation check - P [POST /ecash/check]
+check cash amount and send a verification code to pma's phone number
+
++ Request 200 (application/json)
+
+        {
+            "amount": 100
+        }
+
++ Response 200 (application/json)
+
+# E-cash Allocation - P [POST /ecash/allocate]
+create / allocate ecash to account
+
++ Request 200 (application/json)
+
+        {
+            "amount": 100,
+            "verification_code": "24XYZ"
+        }
+
++ Response 200 (application/json)
+
+## Transaction History - D [GET /admin/transactions{?page,per_page}]
+
++ Parameters
+    + per_page: 10 (number, optional) - per page limit
+    + page: 1 (number, optional) - current page number
+
++ Request
+    + Headers
+
+            Authorization: Bearer {{access_token}}
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id": "b48fa020f9c6bbd9",
+                    "source": {
+                        "name": "Hello",
+                        "number": "9939993"
+                    },
+                    "destination": {
+                        "name": "Obers",
+                        "number": "01534-743900"
+                    },
+                    "amount": 671226,
+                    "source_balance": 558179832,
+                    "destination_balance": 3,
+                    "time": "2017-07-02T06:55:46Z"
+                },
+                {
+                    "id": "e2540a69b9a66259",
+                    "source": {
+                        "name": "Shifat Adnan",
+                        "number": "1713206053"
+                    },
+                    "destination": {
+                        "name": "lksalkdjlk",
+                        "number": "010238-28838"
+                    },
+                    "amount": 8,
+                    "source_balance": 52749991,
+                    "destination_balance": 73965,
+                    "time": "2017-07-09T12:46:11Z"
+                }
+            ]
+        }     }

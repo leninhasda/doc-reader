@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Upload your Document</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">
+
+    <style>
+        body {
+            padding: 20px;
+            background: #fefeff;
+        }
+        .ui.action.input input[type="file"] {
+            display: none;
+        }
+        .column {
+            max-width: 450px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="ui middle aligned grid center aligned">
+    <div class="column">
+    <div class="ui attached message">
+        <div class="header">
+            Upload a blueprint doc
+        </div>
+        <p>Only <code>.apid</code> format/extension is supported</p>
+    </div>
+    <form action="/upload" enctype="multipart/form-data" method="POST" class="ui form attached segment">
+        <div class="fields">
+            <div class="twelve wide field">
+                <div class="ui action input">
+                    <input type="text" placeholder="Choose a file" readonly>
+                    <input type="file" name="uploadFile">
+                    <div class="ui icon button">
+                        <i class="attach icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="four wide field">
+                <input type="submit" value="Upload" class="ui button black">
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>
+<script type="text/javascript">
+    $("input:text").click(function() {
+        $(this).parent().find("input:file").click();
+    });
+    $("div.ui.button").click(function() {
+        $(this).parent().find("input:file").click();
+    });
+
+    $('input:file', '.ui.action.input')
+        .on('change', function(e) {
+            var name = e.target.files[0].name;
+            $('input:text', $(e.target).parent()).val(name);
+        });
+</script>
+</body>
+</html>

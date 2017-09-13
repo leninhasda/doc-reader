@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">
+
+    <style>
+        body {
+            padding: 20px;
+            background: #fefeff;
+        }
+
+        .column {
+            max-width: 450px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="ui middle aligned grid center aligned">
+    <div class="ui column">
+        <div class="ui attached message">
+            <div class="header">
+                Api Doc List
+
+            </div>
+            <p>Only <code>.apid</code> format/extension is supported</p>
+        </div>
+        <div class="ui attached column center aligned grid segment">
+            <div class="ten wide column">
+                <div class="ui form field">
+                    <input type="text" placeholder="Search..." id="search">
+                </div>
+            </div>
+            <div class="six wide column">
+                <a href="/upload" class="ui button blue wide">Upload New</a>
+            </div>
+        </div>
+        <div class="ui segment attached left aligned">
+            <div class="ui list divided">
+                <div class="item">
+                    <a href="#">lenin</a>
+                </div>
+                <div class="item">
+                    <a href="#">farhan</a>
+                </div>
+                <div class="item">
+                    <a href="#">junan</a>
+                </div>
+                <div class="item">
+                    <a href="#">pronoy</a>
+                </div>
+                <div class="item">
+                    <a href="#">symon</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g=" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var list = $("div.list > .item");
+        $("#search").on("keyup", function () {
+            q = $(this).val();
+            $('div.item').show();
+            if (q.length) {
+                $.each(list, function (_i, li) {
+                    txt = $(li).find("a").text();
+                    if (txt.toLowerCase().match(q) == null) {
+                        $(li).hide();
+                    }
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>
