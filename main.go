@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -13,13 +14,34 @@ import (
 )
 
 func main() {
-	fs := http.FileServer(http.Dir("./public"))
-	http.Handle("/doc/", http.StripPrefix("/doc/", fs))
 
+	fs := http.FileServer(http.Dir("./public"))
+	http.Handle("/doc/", BasicAuth(http.StripPrefix("/doc/", fs)))
 	http.HandleFunc("/", ListAll)
 	http.HandleFunc("/index", ListAll)
 	http.HandleFunc("/upload", Upload)
 	http.ListenAndServe(":5000", nil)
+}
+
+// BasicAuth implements a basic http authentication
+func BasicAuth(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		u, p, ok := r.BasicAuth()
+		if ok && validate(u, p) {
+			h.ServeHTTP(w, r)
+		} else {
+			w.Header().Set("WWW-Authenticate", `Basic realm="enter user / pass"`)
+			w.WriteHeader(401)
+			w.Write([]byte("Unauthorised.\n"))
+			return
+		}
+	})
+}
+func validate(u, p string) bool {
+	if u == "user" && p == "pass" {
+		return true
+	}
+	return false
 }
 
 func render(w http.ResponseWriter, filename string, data interface{}) {
@@ -30,10 +52,22 @@ func render(w http.ResponseWriter, filename string, data interface{}) {
 
 // ListAll list all existing docs
 func ListAll(w http.ResponseWriter, r *http.Request) {
+	publicDir := "./public"
+	files, err := ioutil.ReadDir(publicDir)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	render(w, "./view/test.html", nil)
+	data := struct {
+		Files []string
+	}{}
+	for _, file := range files {
+		data.Files = append(data.Files, file.Name())
+	}
+	render(w, "./view/list.html", data)
 }
 
+// Upload uploads an api doc
 func Upload(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
@@ -48,6 +82,7 @@ func UploadNew(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "view/upload-form.html")
 }
 
+// ShellExec wrappr around exec.command
 func ShellExec(args ...string) (string, string) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -63,10 +98,10 @@ func ShellExec(args ...string) (string, string) {
 	if err := cmd.Start(); err != nil {
 		panic(err)
 	}
-	err_str, _ := ioutil.ReadAll(stderr)
-	out_str, _ := ioutil.ReadAll(stdout)
+	errStr, _ := ioutil.ReadAll(stderr)
+	outStr, _ := ioutil.ReadAll(stdout)
 
-	return string(out_str), string(err_str)
+	return string(outStr), string(errStr)
 }
 
 // Process processes the uploaded file
@@ -83,7 +118,8 @@ func Process(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		if validateFileType(file, handle) {
-			tmpFilePath := "./tmp/" + handle.Filename
+			fileName := strings.Replace(handle.Filename, " ", "-", -1)
+			tmpFilePath := "./tmp/" + fileName
 			f, err := os.OpenFile(tmpFilePath, os.O_WRONLY|os.O_CREATE, 0666)
 			if err != nil {
 				fmt.Println(err)
@@ -93,13 +129,13 @@ func Process(w http.ResponseWriter, r *http.Request) {
 
 			io.Copy(f, file)
 
-			// parse with aglio
-			renderFilePath := "./public/" + strings.Split(handle.Filename, ".")[0] + ".html"
+			// parse with aglioß
+			renderFilePath := "./public/" + strings.Split(fileName, ".")[0] + ".html"
 			shOut, shErr := ShellExec("aglio", "-i", tmpFilePath, "-o", renderFilePath)
 
 			if len(shOut) == 0 && len(shErr) == 0 {
-				Redirect(w, r, "/doc/"+strings.Replace(handle.Filename, ".apid", ".html", 1))
-				//fmt.Fprintf(w, "done %s", strings.Replace(handle.Filename, ".apid", ".html", 1))
+				url := "/doc/" + strings.Replace(fileName, ".apid", ".html", 1)
+				http.Redirect(w, r, url, 301)
 			} else {
 				fmt.Fprintf(w, "out: %s \n\nerr: %s", shOut, shErr)
 			}
@@ -120,18 +156,13 @@ func validateFileType(file multipart.File, handle *multipart.FileHeader) bool {
 	}
 
 	// check mime type
-	allowed_type := "text/plain; charset=utf-8"
+	allowedType := "text/plain; charset=utf-8"
 	b := []byte{}
 	file.Read(b)
-	if fileType := http.DetectContentType(b); fileType != allowed_type {
+	if fileType := http.DetectContentType(b); fileType != allowedType {
 		return false
 	}
 
 	// valid file
 	return true
-}
-
-func Redirect(w http.ResponseWriter, r *http.Request, url string) {
-
-	http.Redirect(w, r, url, 301)
 }

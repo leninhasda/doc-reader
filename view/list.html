@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Doc Reader - Api Doc List</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">
 
@@ -15,46 +15,52 @@
         .column {
             max-width: 450px;
         }
+        .item a {
+            padding: 10px 7px;
+            display: block;
+            transition: all 0.5s;
+        }
+        .item a:hover {
+            background: #fff8da;
+            transition: all 0.5s;
+        }
     </style>
 </head>
 <body>
 
 <div class="ui middle aligned grid center aligned">
     <div class="ui column">
+
         <div class="ui attached message">
             <div class="header">
-                Api Doc List
-
+                Doc Reader - Api Doc List
             </div>
-            <p>Only <code>.apid</code> format/extension is supported</p>
+            <p>Read or Upload your Api Doc</p>
         </div>
+
         <div class="ui attached column center aligned grid segment">
             <div class="ten wide column">
                 <div class="ui form field">
                     <input type="text" placeholder="Search..." id="search">
                 </div>
             </div>
+
             <div class="six wide column">
                 <a href="/upload" class="ui button blue wide">Upload New</a>
             </div>
         </div>
+
         <div class="ui segment attached left aligned">
             <div class="ui list divided">
-                <div class="item">
-                    <a href="#">lenin</a>
-                </div>
-                <div class="item">
-                    <a href="#">farhan</a>
-                </div>
-                <div class="item">
-                    <a href="#">junan</a>
-                </div>
-                <div class="item">
-                    <a href="#">pronoy</a>
-                </div>
-                <div class="item">
-                    <a href="#">symon</a>
-                </div>
+                {{range .Files}}
+                    <div class="item">
+                        <a href="/doc/{{ . }}" target="_blank">{{ . }}</a>
+                    </div>
+                {{else}}
+                    <div class="item center aligned">
+                        <strong>no doc</strong>
+                    </div>
+                {{end}}
             </div>
         </div>
 
